@@ -961,8 +961,8 @@ void AdvSceneSwitcher::SetupGeneralTab()
 	connect(midiSettingsButton, &QPushButton::clicked, this, [this]() {
 		MidiSettingsDialog dialog(this);
 		if (dialog.exec() == QDialog::Accepted) {
-			// Settings are saved automatically in the dialog
-			// Trigger a save to persist the settings
+			// Settings are saved in OnOkClicked before dialog closes
+			// Trigger a save to persist the settings to disk
 			obs_frontend_save();
 		}
 	});

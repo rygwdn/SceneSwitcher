@@ -27,7 +27,7 @@ static bool setupMidiDeviceObservers()
 				std::string name = getNameFromPortInformation(p);
 				blog(LOG_INFO, "MIDI input connected: %s",
 				     p.port_name.c_str());
-				
+
 				// Check if this device should be opened according to settings
 				if (!IsMidiEndpointEnabled(name, MidiDeviceType::INPUT)) {
 					blog(LOG_INFO,
@@ -35,7 +35,7 @@ static bool setupMidiDeviceObservers()
 					     name.c_str());
 					return;
 				}
-				
+
 				// Get or create device instance and open it
 				// OpenPort will check if endpoint is enabled, but we already checked
 				auto dev = MidiDeviceInstance::GetDeviceAndOpen(
@@ -56,7 +56,7 @@ static bool setupMidiDeviceObservers()
 				std::string name = getNameFromPortInformation(p);
 				blog(LOG_INFO, "MIDI output connected: %s",
 				     p.port_name.c_str());
-				
+
 				// Check if this device should be opened according to settings
 				if (!IsMidiEndpointEnabled(name, MidiDeviceType::OUTPUT)) {
 					blog(LOG_INFO,
@@ -64,7 +64,7 @@ static bool setupMidiDeviceObservers()
 					     name.c_str());
 					return;
 				}
-				
+
 				// Get or create device instance and open it
 				// OpenPort will check if endpoint is enabled, but we already checked
 				auto dev = MidiDeviceInstance::GetDeviceAndOpen(
@@ -1095,7 +1095,7 @@ bool IsMidiEndpointEnabled(const std::string &name, MidiDeviceType type)
 	}
 
 	std::lock_guard<std::mutex> lock(switcher->m);
-	
+
 	// Check if device is in the settings
 	for (const auto &setting : switcher->midiEndpointSettings) {
 		if (setting._name != name) {
@@ -1121,14 +1121,20 @@ void OpenEnabledMidiEndpoints()
 		return;
 	}
 
-	std::lock_guard<std::mutex> lock(switcher->m);
+	// Copy settings list while holding lock, then release lock
+	// to avoid deadlock when GetDeviceAndOpen() calls IsMidiEndpointEnabled()
+	std::vector<MidiEndpointSettings> settingsCopy;
+	{
+		std::lock_guard<std::mutex> lock(switcher->m);
+		settingsCopy = switcher->midiEndpointSettings;
+	}
 
 	// Get all currently available devices
 	QStringList inputDevices = GetInputDeviceNames();
 	QStringList outputDevices = GetOutputDeviceNames();
 
 	// Try to open all enabled input devices
-	for (const auto &setting : switcher->midiEndpointSettings) {
+	for (const auto &setting : settingsCopy) {
 		std::string name = setting._name;
 		int modeInt = static_cast<int>(setting._mode);
 

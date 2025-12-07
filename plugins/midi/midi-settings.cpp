@@ -110,11 +110,20 @@ void MidiSettingsDialog::SetupTable()
 	// Make input and output columns checkboxes
 	_table->setItemDelegateForColumn(1, nullptr);
 	_table->setItemDelegateForColumn(2, nullptr);
+
+	// Connect cell changed signal to update mode (only once)
+	connect(_table, &QTableWidget::cellChanged, this,
+		&MidiSettingsDialog::OnModeChanged);
 }
 
 void MidiSettingsDialog::UpdateDeviceList()
 {
 	PopulateTable();
+}
+
+void MidiSettingsDialog::RefreshDeviceList()
+{
+	UpdateDeviceList();
 }
 
 void MidiSettingsDialog::PopulateTable()
@@ -186,10 +195,6 @@ void MidiSettingsDialog::PopulateTable()
 
 	_table->resizeColumnsToContents();
 	_table->horizontalHeader()->setStretchLastSection(true);
-
-	// Connect cell changed signal to update mode
-	connect(_table, &QTableWidget::cellChanged, this,
-		&MidiSettingsDialog::OnModeChanged);
 }
 
 void MidiSettingsDialog::OnModeChanged(int row, int column)
@@ -237,6 +242,21 @@ MidiSettingsDialog::GetModeForDevice(const std::string &name) const
 			return setting._mode;
 		}
 	}
+	// Device not in settings - return BOTH to match runtime behavior
+	// (IsMidiEndpointEnabled returns true for devices not in settings)
+	// The actual enabled state depends on what the device supports
+	QString qName = QString::fromStdString(name);
+	QStringList inputDevices = GetInputDeviceNames();
+	QStringList outputDevices = GetOutputDeviceNames();
+	bool hasInput = inputDevices.contains(qName);
+	bool hasOutput = outputDevices.contains(qName);
+	if (hasInput && hasOutput) {
+		return MidiEndpointMode::BOTH;
+	} else if (hasInput) {
+		return MidiEndpointMode::INPUT;
+	} else if (hasOutput) {
+		return MidiEndpointMode::OUTPUT;
+	}
 	return MidiEndpointMode::NONE;
 }
 
@@ -264,6 +284,7 @@ void MidiSettingsDialog::ApplySettings()
 
 void MidiSettingsDialog::OnApplyClicked()
 {
+	SaveSettings();
 	ApplySettings();
 	DisplayMessage(obs_module_text(
 		"AdvSceneSwitcher.midi.settings.applied"));
@@ -271,6 +292,7 @@ void MidiSettingsDialog::OnApplyClicked()
 
 void MidiSettingsDialog::OnOkClicked()
 {
+	SaveSettings();
 	ApplySettings();
 	accept();
 }
