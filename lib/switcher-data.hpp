@@ -14,6 +14,11 @@
 #include "switch-sequence.hpp"
 #include "switch-video.hpp"
 
+// Forward declaration - full definition in plugins/midi/midi-settings.hpp
+namespace advss {
+struct MidiEndpointSettings;
+}
+
 #include "duration-control.hpp"
 #include "plugin-state-helpers.hpp"
 #include "priority-helper.hpp"
@@ -132,6 +137,10 @@ public:
 	bool adjustActiveTransitionType = true;
 
 	/* --- End of General tab section --- */
+
+	/* --- Start of MIDI settings section --- */
+	std::vector<struct advss::MidiEndpointSettings> midiEndpointSettings;
+	/* --- End of MIDI settings section --- */
 
 	std::string lastTitle;
 	std::string currentTitle;
