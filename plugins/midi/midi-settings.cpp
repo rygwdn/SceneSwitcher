@@ -144,6 +144,8 @@ void MidiSettingsDialog::PopulateTable()
 	QStringList deviceList = allDevicesSet.values();
 	deviceList.sort();
 
+	// Block signals during table population to prevent spurious OnModeChanged calls
+	const QSignalBlocker blocker(_table);
 	_table->setRowCount(deviceList.size());
 
 	for (int i = 0; i < deviceList.size(); i++) {
@@ -277,8 +279,10 @@ void MidiSettingsDialog::ApplySettings()
 	// Close all currently open MIDI ports
 	MidiDeviceInstance::ResetAllDevices();
 
-	// The ports will be reopened as needed when devices are selected
-	// through MidiDeviceSelection, but only if they're enabled in settings
+	// Open all enabled MIDI endpoints (including newly enabled ones)
+	// This handles devices that weren't previously in the devices map
+	OpenEnabledMidiEndpoints();
+
 	_settingsChanged = false;
 }
 
