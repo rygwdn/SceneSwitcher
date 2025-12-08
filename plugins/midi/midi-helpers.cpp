@@ -73,15 +73,18 @@ static bool setupMidiDeviceObservers()
 					blog(LOG_INFO, "Opened MIDI output '%s'", name.c_str());
 				}
 			};
-			cbs.output_removed = [=](const libremidi::output_port &p) {
-				auto dev = MidiDeviceInstance::GetDevice(p);
-				if (!dev) {
-					return;
-				}
-				blog(LOG_INFO,
-				     "MIDI output removed: %s",
-				     p.port_name.c_str());
-			};
+			cbs.output_removed =
+				[=](const libremidi::output_port &p) {
+					auto dev =
+						MidiDeviceInstance::GetDevice(
+							p);
+					if (!dev) {
+						return;
+					}
+					blog(LOG_INFO,
+					     "MIDI output removed: %s",
+					     p.port_name.c_str());
+				};
 			observers.emplace_back(
 				cbs,
 				libremidi::observer_configuration_for(api));
