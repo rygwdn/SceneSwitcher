@@ -1,5 +1,6 @@
 #pragma once
 #include "midi-helpers.hpp"
+
 #include <QDialog>
 #include <QTableWidget>
 #include <QComboBox>

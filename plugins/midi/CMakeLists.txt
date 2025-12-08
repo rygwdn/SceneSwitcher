@@ -45,9 +45,13 @@ endif()
 
 target_sources(
   ${PROJECT_NAME}
-  PRIVATE macro-condition-midi.cpp macro-condition-midi.hpp
-          macro-action-midi.cpp macro-action-midi.hpp midi-helpers.cpp
-          midi-helpers.hpp midi-settings.cpp
+  PRIVATE macro-condition-midi.cpp
+          macro-condition-midi.hpp
+          macro-action-midi.cpp
+          macro-action-midi.hpp
+          midi-helpers.cpp
+          midi-helpers.hpp
+          midi-settings.cpp
           midi-settings.hpp)
 
 setup_advss_plugin(${PROJECT_NAME})

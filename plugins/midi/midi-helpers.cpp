@@ -75,9 +75,7 @@ static bool setupMidiDeviceObservers()
 			};
 			cbs.output_removed =
 				[=](const libremidi::output_port &p) {
-					auto dev =
-						MidiDeviceInstance::GetDevice(
-							p);
+					auto dev = MidiDeviceInstance::GetDevice(p);
 					if (!dev) {
 						return;
 					}
