@@ -174,8 +174,8 @@ void MidiSettingsDialog::PopulateTable()
 		MidiEndpointMode mode = GetModeForDevice(deviceNameStd);
 		bool inputEnabled = (mode == MidiEndpointMode::INPUT ||
 				     mode == MidiEndpointMode::BOTH);
-		inputItem->setCheckState(inputEnabled ? Qt::Checked :
-						 Qt::Unchecked);
+		inputItem->setCheckState(
+			inputEnabled ? Qt::Checked : Qt::Unchecked);
 		_table->setItem(i, 1, inputItem);
 
 		// Output checkbox
@@ -190,8 +190,8 @@ void MidiSettingsDialog::PopulateTable()
 		}
 		bool outputEnabled = (mode == MidiEndpointMode::OUTPUT ||
 				      mode == MidiEndpointMode::BOTH);
-		outputItem->setCheckState(outputEnabled ? Qt::Checked :
-						  Qt::Unchecked);
+		outputItem->setCheckState(
+			outputEnabled ? Qt::Checked : Qt::Unchecked);
 		_table->setItem(i, 2, outputItem);
 	}
 

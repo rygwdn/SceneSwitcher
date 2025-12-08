@@ -17,8 +17,8 @@
 #include "variable.hpp"
 #include "version.h"
 
-#include "../plugins/midi/midi-settings.hpp"
 #include "../plugins/midi/midi-helpers.hpp"
+#include "../plugins/midi/midi-settings.hpp"
 
 #include <obs-frontend-api.h>
 #include <QFileDialog>
