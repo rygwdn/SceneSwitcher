@@ -39,6 +39,7 @@ constexpr auto default_interval = 300;
 
 typedef const char *(*translateFunc)(const char *);
 typedef void (*ShowMidiSettingsDialogFunc)(QWidget *parent);
+typedef void (*OpenEnabledMidiEndpointsFunc)();
 
 class Item;
 class Macro;
@@ -141,6 +142,7 @@ public:
 	/* --- Start of MIDI settings section --- */
 	std::vector<struct advss::MidiEndpointSettings> midiEndpointSettings;
 	ShowMidiSettingsDialogFunc showMidiSettingsDialog = nullptr;
+	OpenEnabledMidiEndpointsFunc openEnabledMidiEndpoints = nullptr;
 	/* --- End of MIDI settings section --- */
 
 	std::string lastTitle;

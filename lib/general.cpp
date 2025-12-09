@@ -17,10 +17,7 @@
 #include "variable.hpp"
 #include "version.h"
 
-// Forward declarations - functions defined in plugins/midi/
-namespace advss {
-void OpenEnabledMidiEndpoints();
-}
+// MIDI functions are accessed via function pointers in SwitcherData
 
 #include <obs-frontend-api.h>
 #include <QFileDialog>
@@ -653,7 +650,9 @@ void SwitcherData::LoadGeneralSettings(obs_data_t *obj)
 
 	// Try to open all enabled MIDI endpoints after loading settings
 	// This handles devices that should be opened but weren't available at startup
-	OpenEnabledMidiEndpoints();
+	if (switcher && switcher->openEnabledMidiEndpoints) {
+		switcher->openEnabledMidiEndpoints();
+	}
 }
 
 void SwitcherData::SaveUISettings(obs_data_t *obj)

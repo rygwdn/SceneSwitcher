@@ -1192,6 +1192,7 @@ void RegisterMidiSettingsDialog()
 	if (switcher) {
 		std::lock_guard<std::mutex> lock(switcher->m);
 		switcher->showMidiSettingsDialog = ShowMidiSettingsDialog;
+		switcher->openEnabledMidiEndpoints = OpenEnabledMidiEndpoints;
 	}
 }
 
