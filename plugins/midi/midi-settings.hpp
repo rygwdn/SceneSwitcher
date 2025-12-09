@@ -29,7 +29,8 @@ public:
 	void Load(obs_data_t *obj)
 	{
 		_name = obs_data_get_string(obj, "name");
-		_mode = static_cast<MidiEndpointMode>(obs_data_get_int(obj, "mode"));
+		_mode = static_cast<MidiEndpointMode>(
+			obs_data_get_int(obj, "mode"));
 	}
 
 	std::string _name;
