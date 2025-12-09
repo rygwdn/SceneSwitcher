@@ -14,10 +14,8 @@
 #include "switch-sequence.hpp"
 #include "switch-video.hpp"
 
-// Forward declaration - full definition in plugins/midi/midi-settings.hpp
-namespace advss {
-struct MidiEndpointSettings;
-}
+// Full definition needed for std::vector - include from plugin header
+#include "../plugins/midi/midi-settings.hpp"
 
 #include "duration-control.hpp"
 #include "plugin-state-helpers.hpp"
