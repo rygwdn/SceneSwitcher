@@ -17,9 +17,7 @@
 #include "variable.hpp"
 #include "version.h"
 
-#include "../plugins/midi/midi-settings.hpp"
-
-// Forward declaration - function defined in plugins/midi/midi-helpers.cpp
+// Forward declarations - functions defined in plugins/midi/
 namespace advss {
 void OpenEnabledMidiEndpoints();
 }
@@ -964,20 +962,25 @@ void AdvSceneSwitcher::SetupGeneralTab()
 	midiSettingsButton->setToolTip(obs_module_text(
 		"AdvSceneSwitcher.midi.settings.button.tooltip"));
 	connect(midiSettingsButton, &QPushButton::clicked, this, [this]() {
-		MidiSettingsDialog dialog(this);
-		if (dialog.exec() == QDialog::Accepted) {
-			// Settings are saved in OnOkClicked before dialog closes
+		if (switcher && switcher->showMidiSettingsDialog) {
+			switcher->showMidiSettingsDialog(this);
 			// Trigger a save to persist the settings to disk
 			obs_frontend_save();
 		}
 	});
 	// Find the generalSettingsBox and add button to its layout
-	if (auto generalSettingsBox =
-		    findChild<QGroupBox *>("generalSettingsBox")) {
-		if (auto layout = qobject_cast<QVBoxLayout *>(
-			    generalSettingsBox->layout())) {
-			layout->addWidget(midiSettingsButton);
+	// Only show button if MIDI plugin has registered the dialog function
+	if (switcher && switcher->showMidiSettingsDialog) {
+		if (auto generalSettingsBox =
+			    findChild<QGroupBox *>("generalSettingsBox")) {
+			if (auto layout = qobject_cast<QVBoxLayout *>(
+				    generalSettingsBox->layout())) {
+				layout->addWidget(midiSettingsButton);
+			}
 		}
+	} else {
+		// MIDI plugin not loaded, don't show button
+		delete midiSettingsButton;
 	}
 
 	populateStartupBehavior(ui->startupBehavior);

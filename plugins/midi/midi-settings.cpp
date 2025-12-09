@@ -333,4 +333,14 @@ void MidiSettingsDialog::SaveSettings()
 	switcher->midiEndpointSettings = _settings;
 }
 
+void ShowMidiSettingsDialog(QWidget *parent)
+{
+	MidiSettingsDialog dialog(parent);
+	if (dialog.exec() == QDialog::Accepted) {
+		// Settings are saved in OnOkClicked before dialog closes
+		// Trigger a save to persist the settings to disk
+		obs_frontend_save();
+	}
+}
+
 } // namespace advss

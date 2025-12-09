@@ -30,6 +30,7 @@
 #include <mutex>
 #include <QDateTime>
 #include <QThread>
+#include <QWidget>
 #include <unordered_map>
 
 namespace advss {
@@ -37,6 +38,7 @@ namespace advss {
 constexpr auto default_interval = 300;
 
 typedef const char *(*translateFunc)(const char *);
+typedef void (*ShowMidiSettingsDialogFunc)(QWidget *parent);
 
 class Item;
 class Macro;
@@ -138,6 +140,7 @@ public:
 
 	/* --- Start of MIDI settings section --- */
 	std::vector<struct advss::MidiEndpointSettings> midiEndpointSettings;
+	ShowMidiSettingsDialogFunc showMidiSettingsDialog = nullptr;
 	/* --- End of MIDI settings section --- */
 
 	std::string lastTitle;

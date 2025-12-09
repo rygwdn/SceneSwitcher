@@ -1,4 +1,5 @@
 #include "midi-helpers.hpp"
+#include "midi-settings.hpp"
 
 #include <layout-helpers.hpp>
 #include <log-helper.hpp>
@@ -112,6 +113,7 @@ static bool setup()
 {
 	std::thread t([]() { setupMidiDeviceObservers(); });
 	t.detach();
+	RegisterMidiSettingsDialog();
 	return true;
 }
 static bool setupDone = setup();
@@ -1182,6 +1184,14 @@ void OpenEnabledMidiEndpoints()
 				     name.c_str());
 			}
 		}
+	}
+}
+
+void RegisterMidiSettingsDialog()
+{
+	if (switcher) {
+		std::lock_guard<std::mutex> lock(switcher->m);
+		switcher->showMidiSettingsDialog = ShowMidiSettingsDialog;
 	}
 }
 
