@@ -32,17 +32,19 @@ void MidiEndpointSettings::Load(obs_data_t *obj)
 MidiSettingsDialog::MidiSettingsDialog(QWidget *parent)
 	: QDialog(parent),
 	  _table(new QTableWidget(this)),
-	  _refreshButton(new QPushButton(obs_module_text(
-		  "AdvSceneSwitcher.midi.settings.refresh"), this)),
-	  _applyButton(new QPushButton(obs_module_text(
-		  "AdvSceneSwitcher.midi.settings.apply"), this)),
-	  _okButton(new QPushButton(obs_module_text(
-		  "AdvSceneSwitcher.midi.settings.ok"), this)),
-	  _cancelButton(new QPushButton(obs_module_text(
-		  "AdvSceneSwitcher.midi.settings.cancel"), this))
+	  _refreshButton(new QPushButton(
+		  obs_module_text("AdvSceneSwitcher.midi.settings.refresh"),
+		  this)),
+	  _applyButton(new QPushButton(
+		  obs_module_text("AdvSceneSwitcher.midi.settings.apply"),
+		  this)),
+	  _okButton(new QPushButton(
+		  obs_module_text("AdvSceneSwitcher.midi.settings.ok"), this)),
+	  _cancelButton(new QPushButton(
+		  obs_module_text("AdvSceneSwitcher.midi.settings.cancel"),
+		  this))
 {
-	setWindowTitle(obs_module_text(
-		"AdvSceneSwitcher.midi.settings.title"));
+	setWindowTitle(obs_module_text("AdvSceneSwitcher.midi.settings.title"));
 	setMinimumSize(600, 400);
 
 	SetupTable();
@@ -64,8 +66,9 @@ MidiSettingsDialog::MidiSettingsDialog(QWidget *parent)
 	auto mainLayout = new QVBoxLayout(this);
 	mainLayout->setContentsMargins(10, 10, 10, 10);
 
-	auto infoLabel = new QLabel(obs_module_text(
-		"AdvSceneSwitcher.midi.settings.description"), this);
+	auto infoLabel = new QLabel(
+		obs_module_text("AdvSceneSwitcher.midi.settings.description"),
+		this);
 	infoLabel->setWordWrap(true);
 	mainLayout->addWidget(infoLabel);
 
@@ -97,8 +100,10 @@ void MidiSettingsDialog::SetupTable()
 {
 	_table->setColumnCount(3);
 	_table->setHorizontalHeaderLabels(
-		{QString(obs_module_text("AdvSceneSwitcher.midi.settings.device")),
-		 QString(obs_module_text("AdvSceneSwitcher.midi.settings.input")),
+		{QString(obs_module_text(
+			 "AdvSceneSwitcher.midi.settings.device")),
+		 QString(obs_module_text(
+			 "AdvSceneSwitcher.midi.settings.input")),
 		 QString(obs_module_text(
 			 "AdvSceneSwitcher.midi.settings.output"))});
 
@@ -164,7 +169,8 @@ void MidiSettingsDialog::PopulateTable()
 
 		// Input checkbox
 		auto inputItem = new QTableWidgetItem();
-		inputItem->setFlags(inputItem->flags() | Qt::ItemIsUserCheckable);
+		inputItem->setFlags(inputItem->flags() |
+				    Qt::ItemIsUserCheckable);
 		if (!hasInput) {
 			inputItem->setFlags(inputItem->flags() &
 					    ~Qt::ItemIsEnabled);
@@ -174,7 +180,8 @@ void MidiSettingsDialog::PopulateTable()
 		MidiEndpointMode mode = GetModeForDevice(deviceNameStd);
 		bool inputEnabled = (mode == MidiEndpointMode::INPUT ||
 				     mode == MidiEndpointMode::BOTH);
-		inputItem->setCheckState(inputEnabled ? Qt::Checked : Qt::Unchecked);
+		inputItem->setCheckState(inputEnabled ? Qt::Checked
+						      : Qt::Unchecked);
 		_table->setItem(i, 1, inputItem);
 
 		// Output checkbox
@@ -189,7 +196,8 @@ void MidiSettingsDialog::PopulateTable()
 		}
 		bool outputEnabled = (mode == MidiEndpointMode::OUTPUT ||
 				      mode == MidiEndpointMode::BOTH);
-		outputItem->setCheckState(outputEnabled ? Qt::Checked : Qt::Unchecked);
+		outputItem->setCheckState(outputEnabled ? Qt::Checked
+							: Qt::Unchecked);
 		_table->setItem(i, 2, outputItem);
 	}
 
@@ -261,7 +269,7 @@ MidiSettingsDialog::GetModeForDevice(const std::string &name) const
 }
 
 void MidiSettingsDialog::SetModeForDevice(const std::string &name,
-					   MidiEndpointMode mode)
+					  MidiEndpointMode mode)
 {
 	for (auto &setting : _settings) {
 		if (setting._name == name) {
@@ -288,8 +296,8 @@ void MidiSettingsDialog::OnApplyClicked()
 {
 	SaveSettings();
 	ApplySettings();
-	DisplayMessage(obs_module_text(
-		"AdvSceneSwitcher.midi.settings.applied"));
+	DisplayMessage(
+		obs_module_text("AdvSceneSwitcher.midi.settings.applied"));
 }
 
 void MidiSettingsDialog::OnOkClicked()

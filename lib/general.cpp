@@ -547,7 +547,8 @@ void SwitcherData::SaveGeneralSettings(obs_data_t *obj)
 		obs_data_array_push_back(midiSettingsArray, item);
 	}
 	if (obs_data_array_count(midiSettingsArray) > 0) {
-		obs_data_set_array(obj, "midiEndpointSettings", midiSettingsArray);
+		obs_data_set_array(obj, "midiEndpointSettings",
+				   midiSettingsArray);
 	}
 }
 
@@ -967,8 +968,10 @@ void AdvSceneSwitcher::SetupGeneralTab()
 		}
 	});
 	// Find the generalSettingsBox and add button to its layout
-	if (auto generalSettingsBox = findChild<QGroupBox *>("generalSettingsBox")) {
-		if (auto layout = qobject_cast<QVBoxLayout *>(generalSettingsBox->layout())) {
+	if (auto generalSettingsBox =
+		    findChild<QGroupBox *>("generalSettingsBox")) {
+		if (auto layout = qobject_cast<QVBoxLayout *>(
+			    generalSettingsBox->layout())) {
 			layout->addWidget(midiSettingsButton);
 		}
 	}

@@ -9,18 +9,14 @@
 
 namespace advss {
 
-enum class MidiEndpointMode {
-	NONE = 0,
-	INPUT = 1,
-	OUTPUT = 2,
-	BOTH = 3
-};
+enum class MidiEndpointMode { NONE = 0, INPUT = 1, OUTPUT = 2, BOTH = 3 };
 
 class MidiEndpointSettings {
 public:
 	MidiEndpointSettings() = default;
 	MidiEndpointSettings(const std::string &name, MidiEndpointMode mode)
-		: _name(name), _mode(mode)
+		: _name(name),
+		  _mode(mode)
 	{
 	}
 

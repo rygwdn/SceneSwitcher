@@ -24,12 +24,14 @@ static bool setupMidiDeviceObservers()
 		for (auto api : libremidi::available_apis()) {
 			libremidi::observer_configuration cbs;
 			cbs.input_added = [=](const libremidi::input_port &p) {
-				std::string name = getNameFromPortInformation(p);
+				std::string name =
+					getNameFromPortInformation(p);
 				blog(LOG_INFO, "MIDI input connected: %s",
 				     p.port_name.c_str());
 
 				// Check if this device should be opened according to settings
-				if (!IsMidiEndpointEnabled(name, MidiDeviceType::INPUT)) {
+				if (!IsMidiEndpointEnabled(
+					    name, MidiDeviceType::INPUT)) {
 					blog(LOG_INFO,
 					     "MIDI input '%s' is disabled in settings, not opening",
 					     name.c_str());
@@ -41,7 +43,8 @@ static bool setupMidiDeviceObservers()
 				auto dev = MidiDeviceInstance::GetDeviceAndOpen(
 					MidiDeviceType::INPUT, name);
 				if (dev) {
-					blog(LOG_INFO, "Opened MIDI input '%s'", name.c_str());
+					blog(LOG_INFO, "Opened MIDI input '%s'",
+					     name.c_str());
 				}
 			};
 			cbs.input_removed = [=](const libremidi::input_port &p) {
@@ -53,12 +56,14 @@ static bool setupMidiDeviceObservers()
 				     p.port_name.c_str());
 			};
 			cbs.output_added = [=](const libremidi::output_port &p) {
-				std::string name = getNameFromPortInformation(p);
+				std::string name =
+					getNameFromPortInformation(p);
 				blog(LOG_INFO, "MIDI output connected: %s",
 				     p.port_name.c_str());
 
 				// Check if this device should be opened according to settings
-				if (!IsMidiEndpointEnabled(name, MidiDeviceType::OUTPUT)) {
+				if (!IsMidiEndpointEnabled(
+					    name, MidiDeviceType::OUTPUT)) {
 					blog(LOG_INFO,
 					     "MIDI output '%s' is disabled in settings, not opening",
 					     name.c_str());
@@ -70,7 +75,9 @@ static bool setupMidiDeviceObservers()
 				auto dev = MidiDeviceInstance::GetDeviceAndOpen(
 					MidiDeviceType::OUTPUT, name);
 				if (dev) {
-					blog(LOG_INFO, "Opened MIDI output '%s'", name.c_str());
+					blog(LOG_INFO,
+					     "Opened MIDI output '%s'",
+					     name.c_str());
 				}
 			};
 			cbs.output_removed =
@@ -1147,7 +1154,8 @@ void OpenEnabledMidiEndpoints()
 					MidiDeviceType::INPUT, name);
 				if (dev) {
 					blog(LOG_INFO,
-					     "Opened enabled MIDI input '%s'", name.c_str());
+					     "Opened enabled MIDI input '%s'",
+					     name.c_str());
 				}
 			} else {
 				blog(LOG_INFO,
