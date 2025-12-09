@@ -19,6 +19,11 @@
 
 #include "../plugins/midi/midi-settings.hpp"
 
+// Forward declaration - function defined in plugins/midi/midi-helpers.cpp
+namespace advss {
+void OpenEnabledMidiEndpoints();
+}
+
 #include <obs-frontend-api.h>
 #include <QFileDialog>
 
