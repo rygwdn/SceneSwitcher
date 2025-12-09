@@ -1,5 +1,6 @@
 #pragma once
 
+#include <obs-data.h>
 #include <QDialog>
 #include <QTableWidget>
 #include <QComboBox>
@@ -19,8 +20,17 @@ public:
 	{
 	}
 
-	void Save(obs_data_t *obj) const;
-	void Load(obs_data_t *obj);
+	void Save(obs_data_t *obj) const
+	{
+		obs_data_set_string(obj, "name", _name.c_str());
+		obs_data_set_int(obj, "mode", static_cast<int>(_mode));
+	}
+
+	void Load(obs_data_t *obj)
+	{
+		_name = obs_data_get_string(obj, "name");
+		_mode = static_cast<MidiEndpointMode>(obs_data_get_int(obj, "mode"));
+	}
 
 	std::string _name;
 	MidiEndpointMode _mode = MidiEndpointMode::NONE;

@@ -17,17 +17,7 @@
 
 namespace advss {
 
-void MidiEndpointSettings::Save(obs_data_t *obj) const
-{
-	obs_data_set_string(obj, "name", _name.c_str());
-	obs_data_set_int(obj, "mode", static_cast<int>(_mode));
-}
-
-void MidiEndpointSettings::Load(obs_data_t *obj)
-{
-	_name = obs_data_get_string(obj, "name");
-	_mode = static_cast<MidiEndpointMode>(obs_data_get_int(obj, "mode"));
-}
+// Save and Load are now inline in the header file
 
 MidiSettingsDialog::MidiSettingsDialog(QWidget *parent)
 	: QDialog(parent),
