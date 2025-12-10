@@ -1,10 +1,13 @@
 #include "midi-settings.hpp"
+#include "midi-helpers.hpp"
 
 #include <layout-helpers.hpp>
 #include <log-helper.hpp>
 #include <obs-module-helper.hpp>
 #include <switcher-data.hpp>
 #include <ui-helpers.hpp>
+
+#include <obs-frontend-api.h>
 
 #include <QHeaderView>
 #include <QVBoxLayout>
