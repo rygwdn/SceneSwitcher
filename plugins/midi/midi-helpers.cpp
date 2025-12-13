@@ -1,4 +1,5 @@
 #include "midi-helpers.hpp"
+#include "midi-settings.hpp"
 
 #include <layout-helpers.hpp>
 #include <log-helper.hpp>
@@ -24,14 +25,28 @@ static bool setupMidiDeviceObservers()
 		for (auto api : libremidi::available_apis()) {
 			libremidi::observer_configuration cbs;
 			cbs.input_added = [=](const libremidi::input_port &p) {
-				auto dev = MidiDeviceInstance::GetDevice(p);
-				if (!dev) {
-					return;
-				}
+				std::string name =
+					getNameFromPortInformation(p);
 				blog(LOG_INFO, "MIDI input connected: %s",
 				     p.port_name.c_str());
-				dev->ClosePort();
-				dev->OpenPort();
+
+				// Check if this device should be opened according to settings
+				if (!IsMidiEndpointEnabled(
+					    name, MidiDeviceType::INPUT)) {
+					blog(LOG_INFO,
+					     "MIDI input '%s' is disabled in settings, not opening",
+					     name.c_str());
+					return;
+				}
+
+				// Get or create device instance and open it
+				// OpenPort will check if endpoint is enabled, but we already checked
+				auto dev = MidiDeviceInstance::GetDeviceAndOpen(
+					MidiDeviceType::INPUT, name);
+				if (dev) {
+					blog(LOG_INFO, "Opened MIDI input '%s'",
+					     name.c_str());
+				}
 			};
 			cbs.input_removed = [=](const libremidi::input_port &p) {
 				auto dev = MidiDeviceInstance::GetDevice(p);
@@ -42,14 +57,29 @@ static bool setupMidiDeviceObservers()
 				     p.port_name.c_str());
 			};
 			cbs.output_added = [=](const libremidi::output_port &p) {
-				auto dev = MidiDeviceInstance::GetDevice(p);
-				if (!dev) {
-					return;
-				}
+				std::string name =
+					getNameFromPortInformation(p);
 				blog(LOG_INFO, "MIDI output connected: %s",
 				     p.port_name.c_str());
-				dev->ClosePort();
-				dev->OpenPort();
+
+				// Check if this device should be opened according to settings
+				if (!IsMidiEndpointEnabled(
+					    name, MidiDeviceType::OUTPUT)) {
+					blog(LOG_INFO,
+					     "MIDI output '%s' is disabled in settings, not opening",
+					     name.c_str());
+					return;
+				}
+
+				// Get or create device instance and open it
+				// OpenPort will check if endpoint is enabled, but we already checked
+				auto dev = MidiDeviceInstance::GetDeviceAndOpen(
+					MidiDeviceType::OUTPUT, name);
+				if (dev) {
+					blog(LOG_INFO,
+					     "Opened MIDI output '%s'",
+					     name.c_str());
+				}
 			};
 			cbs.output_removed =
 				[=](const libremidi::output_port &p) {
@@ -83,6 +113,7 @@ static bool setup()
 {
 	std::thread t([]() { setupMidiDeviceObservers(); });
 	t.detach();
+	RegisterMidiSettingsDialog();
 	return true;
 }
 static bool setupDone = setup();
@@ -480,6 +511,15 @@ bool MidiDeviceInstance::OpenPort()
 {
 	if (IsOpened()) {
 		return true;
+	}
+
+	// Check if this endpoint is enabled in settings
+	if (!IsMidiEndpointEnabled(_name, _type)) {
+		blog(LOG_INFO,
+		     "MIDI %s port '%s' is disabled in settings, not opening",
+		     _type == MidiDeviceType::INPUT ? "input" : "output",
+		     _name.c_str());
+		return false;
 	}
 
 	if (_type == MidiDeviceType::OUTPUT) {
@@ -1044,6 +1084,116 @@ QStringList GetAllNotes()
 		done = true;
 	}
 	return result;
+}
+
+QStringList GetInputDeviceNames()
+{
+	return getInputDeviceNames();
+}
+
+QStringList GetOutputDeviceNames()
+{
+	return getOutputDeviceNames();
+}
+
+bool IsMidiEndpointEnabled(const std::string &name, MidiDeviceType type)
+{
+	if (!switcher) {
+		// If switcher is not available, allow all endpoints (backward compatibility)
+		return true;
+	}
+
+	std::lock_guard<std::mutex> lock(switcher->m);
+
+	// Check if device is in the settings
+	for (const auto &setting : switcher->midiEndpointSettings) {
+		if (setting._name != name) {
+			continue;
+		}
+
+		// mode: 0=NONE, 1=INPUT, 2=OUTPUT, 3=BOTH
+		int modeInt = static_cast<int>(setting._mode);
+		if (type == MidiDeviceType::INPUT) {
+			return modeInt == 1 || modeInt == 3; // INPUT or BOTH
+		} else {
+			return modeInt == 2 || modeInt == 3; // OUTPUT or BOTH
+		}
+	}
+
+	// If device is not in settings, allow it (backward compatibility)
+	return true;
+}
+
+void OpenEnabledMidiEndpoints()
+{
+	if (!switcher) {
+		return;
+	}
+
+	// Copy settings list while holding lock, then release lock
+	// to avoid deadlock when GetDeviceAndOpen() calls IsMidiEndpointEnabled()
+	std::vector<MidiEndpointSettings> settingsCopy;
+	{
+		std::lock_guard<std::mutex> lock(switcher->m);
+		settingsCopy = switcher->midiEndpointSettings;
+	}
+
+	// Get all currently available devices
+	QStringList inputDevices = GetInputDeviceNames();
+	QStringList outputDevices = GetOutputDeviceNames();
+
+	// Try to open all enabled input devices
+	for (const auto &setting : settingsCopy) {
+		std::string name = setting._name;
+		int modeInt = static_cast<int>(setting._mode);
+
+		// Check if input should be opened
+		if (modeInt == 1 || modeInt == 3) { // INPUT or BOTH
+			QString qName = QString::fromStdString(name);
+			if (inputDevices.contains(qName)) {
+				// Device is available and should be opened
+				auto dev = MidiDeviceInstance::GetDeviceAndOpen(
+					MidiDeviceType::INPUT, name);
+				if (dev) {
+					blog(LOG_INFO,
+					     "Opened enabled MIDI input '%s'",
+					     name.c_str());
+				}
+			} else {
+				blog(LOG_INFO,
+				     "MIDI input '%s' is enabled but not available",
+				     name.c_str());
+			}
+		}
+
+		// Check if output should be opened
+		if (modeInt == 2 || modeInt == 3) { // OUTPUT or BOTH
+			QString qName = QString::fromStdString(name);
+			if (outputDevices.contains(qName)) {
+				// Device is available and should be opened
+				auto dev = MidiDeviceInstance::GetDeviceAndOpen(
+					MidiDeviceType::OUTPUT, name);
+				if (dev) {
+					blog(LOG_INFO,
+					     "Opened enabled MIDI output '%s'",
+					     name.c_str());
+				}
+			} else {
+				blog(LOG_INFO,
+				     "MIDI output '%s' is enabled but not available",
+				     name.c_str());
+			}
+		}
+	}
+}
+
+void RegisterMidiSettingsDialog()
+{
+	if (switcher) {
+		std::lock_guard<std::mutex> lock(switcher->m);
+		switcher->showMidiSettingsDialog = ShowMidiSettingsDialog;
+		switcher->openEnabledMidiEndpoints = OpenEnabledMidiEndpoints;
+	}
 }
 
 } // namespace advss

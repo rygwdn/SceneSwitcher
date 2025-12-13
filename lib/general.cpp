@@ -17,6 +17,7 @@
 #include "variable.hpp"
 #include "version.h"
 
+// MIDI functions are accessed via function pointers in SwitcherData
 #include <obs-frontend-api.h>
 #include <QFileDialog>
 
@@ -535,6 +536,18 @@ void SwitcherData::SaveGeneralSettings(obs_data_t *obj)
 			  adjustActiveTransitionType);
 
 	obs_data_set_string(obj, "lastImportPath", lastImportPath.c_str());
+
+	// Save MIDI endpoint settings
+	OBSDataArrayAutoRelease midiSettingsArray = obs_data_array_create();
+	for (const auto &setting : midiEndpointSettings) {
+		OBSDataAutoRelease item = obs_data_create();
+		setting.Save(item);
+		obs_data_array_push_back(midiSettingsArray, item);
+	}
+	if (obs_data_array_count(midiSettingsArray) > 0) {
+		obs_data_set_array(obj, "midiEndpointSettings",
+				   midiSettingsArray);
+	}
 }
 
 void SwitcherData::LoadGeneralSettings(obs_data_t *obj)
@@ -618,6 +631,27 @@ void SwitcherData::LoadGeneralSettings(obs_data_t *obj)
 	}
 
 	lastImportPath = obs_data_get_string(obj, "lastImportPath");
+
+	// Load MIDI endpoint settings
+	midiEndpointSettings.clear();
+	OBSDataArrayAutoRelease midiSettingsArray =
+		obs_data_get_array(obj, "midiEndpointSettings");
+	if (midiSettingsArray) {
+		size_t count = obs_data_array_count(midiSettingsArray);
+		for (size_t i = 0; i < count; i++) {
+			OBSDataAutoRelease item =
+				obs_data_array_item(midiSettingsArray, i);
+			advss::MidiEndpointSettings setting;
+			setting.Load(item);
+			midiEndpointSettings.push_back(setting);
+		}
+	}
+
+	// Try to open all enabled MIDI endpoints after loading settings
+	// This handles devices that should be opened but weren't available at startup
+	if (switcher && switcher->openEnabledMidiEndpoints) {
+		switcher->openEnabledMidiEndpoints();
+	}
 }
 
 void SwitcherData::SaveUISettings(obs_data_t *obj)
@@ -919,6 +953,33 @@ void AdvSceneSwitcher::SetupGeneralTab()
 
 	populatePriorityFunctionList(ui->priorityList);
 	populateThreadPriorityList(ui->threadPriority);
+
+	// Add MIDI settings button to general settings box
+	auto midiSettingsButton = new QPushButton(
+		obs_module_text("AdvSceneSwitcher.midi.settings.button"), this);
+	midiSettingsButton->setToolTip(obs_module_text(
+		"AdvSceneSwitcher.midi.settings.button.tooltip"));
+	connect(midiSettingsButton, &QPushButton::clicked, this, [this]() {
+		if (switcher && switcher->showMidiSettingsDialog) {
+			switcher->showMidiSettingsDialog(this);
+			// Trigger a save to persist the settings to disk
+			obs_frontend_save();
+		}
+	});
+	// Find the generalSettingsBox and add button to its layout
+	// Only show button if MIDI plugin has registered the dialog function
+	if (switcher && switcher->showMidiSettingsDialog) {
+		if (auto generalSettingsBox =
+			    findChild<QGroupBox *>("generalSettingsBox")) {
+			if (auto layout = qobject_cast<QVBoxLayout *>(
+				    generalSettingsBox->layout())) {
+				layout->addWidget(midiSettingsButton);
+			}
+		}
+	} else {
+		// MIDI plugin not loaded, don't show button
+		delete midiSettingsButton;
+	}
 
 	populateStartupBehavior(ui->startupBehavior);
 	ui->startupBehavior->setCurrentIndex(

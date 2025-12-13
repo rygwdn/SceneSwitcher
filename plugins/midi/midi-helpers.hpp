@@ -173,4 +173,17 @@ private:
 
 QStringList GetAllNotes();
 
+// Functions to get available MIDI device names
+QStringList GetInputDeviceNames();
+QStringList GetOutputDeviceNames();
+
+// Functions to check if MIDI endpoint is enabled
+bool IsMidiEndpointEnabled(const std::string &name, MidiDeviceType type);
+
+// Function to open all enabled MIDI endpoints (called after settings load)
+void OpenEnabledMidiEndpoints();
+
+// Function to show MIDI settings dialog (registered with main library)
+void ShowMidiSettingsDialog(QWidget *parent);
+
 } // namespace advss

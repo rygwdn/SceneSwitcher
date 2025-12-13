@@ -14,6 +14,9 @@
 #include "switch-sequence.hpp"
 #include "switch-video.hpp"
 
+// Full definition needed for std::vector - include from plugin header
+#include "../plugins/midi/midi-settings.hpp"
+
 #include "duration-control.hpp"
 #include "plugin-state-helpers.hpp"
 #include "priority-helper.hpp"
@@ -27,6 +30,7 @@
 #include <mutex>
 #include <QDateTime>
 #include <QThread>
+#include <QWidget>
 #include <unordered_map>
 
 namespace advss {
@@ -34,6 +38,8 @@ namespace advss {
 constexpr auto default_interval = 300;
 
 typedef const char *(*translateFunc)(const char *);
+typedef void (*ShowMidiSettingsDialogFunc)(QWidget *parent);
+typedef void (*OpenEnabledMidiEndpointsFunc)();
 
 class Item;
 class Macro;
@@ -132,6 +138,12 @@ public:
 	bool adjustActiveTransitionType = true;
 
 	/* --- End of General tab section --- */
+
+	/* --- Start of MIDI settings section --- */
+	std::vector<struct advss::MidiEndpointSettings> midiEndpointSettings;
+	ShowMidiSettingsDialogFunc showMidiSettingsDialog = nullptr;
+	OpenEnabledMidiEndpointsFunc openEnabledMidiEndpoints = nullptr;
+	/* --- End of MIDI settings section --- */
 
 	std::string lastTitle;
 	std::string currentTitle;
