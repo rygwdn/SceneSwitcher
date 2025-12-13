@@ -18,7 +18,6 @@
 #include "version.h"
 
 // MIDI functions are accessed via function pointers in SwitcherData
-
 #include <obs-frontend-api.h>
 #include <QFileDialog>
 
